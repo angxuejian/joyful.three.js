@@ -109,7 +109,7 @@ export function usePoints({
     geometry.setDrawRange(0, drawCount)
   }
 
-  const update = () => {
+  const updatePoint = () => {
     const now = Date.now()
 
     const alphaDecay = (dt: number) => 1.0 - Math.min(dt / decayTime, 1.0)
@@ -137,5 +137,5 @@ export function usePoints({
     init()
   })
 
-  return { addPoint, update }
+  return { addPoint, updatePoint }
 }

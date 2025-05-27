@@ -6,13 +6,13 @@ import { usePoints } from '../hooks/use-points'
 const threeRef: Ref = ref()
 
 const { add } = useThreejs({ elRef: threeRef, axis: true, stats: true, grid: false })
-const { addPoint, update } = usePoints({ add, alpha: true, decayTime: 5_000 })
+const { addPoint, updatePoint } = usePoints({ add, alpha: true, decayTime: 5_000 })
 
 let i = 0
 onMounted(() => {
-    setInterval(() => {
-      run()
-    }, 1000);
+  setInterval(() => {
+    run()
+  }, 1000);
 })
 
 const run = () => {
@@ -21,7 +21,8 @@ const run = () => {
   addPoint(0, 0, i, 0, 0, 1)
 
   i += 0.1
-  update()
+
+  updatePoint()
 }
 
 </script>
