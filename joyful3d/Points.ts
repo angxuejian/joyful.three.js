@@ -1,47 +1,39 @@
 import * as THREE from 'three'
 
 export interface PointsOptionsType {
-  add?: (obj: THREE.Object3D) => void
+  scene?: THREE.Scene
   maxPoints?: number
-  decayTime?: number
+  // decayTime?: number
   alpha?: boolean
 }
 
 export default class Points {
   private maxPoints: number
-  private decayTime: number
+  // private decayTime: number
   private alpha: boolean
   private colorLength: number
   private currentIndex = 0
 
+  private scene: THREE.Scene | undefined
   private points: THREE.Points
   private geometry: THREE.BufferGeometry
   private material: THREE.Material
-  private timestamps: Float64Array
+  // private timestamps: Float64Array
 
   constructor(private options: PointsOptionsType = {}) {
-    this.maxPoints = options.maxPoints || 1000
-    this.decayTime = options.decayTime || 1000
-    this.alpha = options.alpha || false
+    this.maxPoints = this.options.maxPoints || 1000
+    // this.decayTime = this.options.decayTime || 1000
+    this.alpha = this.options.alpha || false
     this.colorLength = this.alpha ? 4 : 3
+    this.scene = this.options.scene
 
     this.geometry = new THREE.BufferGeometry()
-    this.timestamps = new Float64Array(this.maxPoints)
+    // this.timestamps = new Float64Array(this.maxPoints)
 
     this.material = this.createMaterial()
     this.initGeometry()
     this.points = new THREE.Points(this.geometry, this.material)
-    this.options.add?.(this.points)
-
-  }
-
-  private initGeometry() {
-    const positionArray = new Float32Array(this.maxPoints * 3)
-    const colorArray = new Float32Array(this.maxPoints * this.colorLength)
-
-    this.geometry.setAttribute('position', new THREE.Float32BufferAttribute(positionArray, 3))
-    this.geometry.setAttribute('color', new THREE.Float32BufferAttribute(colorArray, this.colorLength))
-    this.geometry.computeBoundingSphere()
+    this.scene?.add(this.points)
   }
 
   private createMaterial(): THREE.Material {
@@ -84,6 +76,15 @@ export default class Points {
     }
   }
 
+  private initGeometry() {
+    const positionArray = new Float32Array(this.maxPoints * 3)
+    const colorArray = new Float32Array(this.maxPoints * this.colorLength)
+
+    this.geometry.setAttribute('position', new THREE.Float32BufferAttribute(positionArray, 3))
+    this.geometry.setAttribute('color', new THREE.Float32BufferAttribute(colorArray, this.colorLength))
+    this.geometry.computeBoundingSphere()
+  }
+
   public getPoint() {
     return this.points
   }
@@ -102,7 +103,7 @@ export default class Points {
       this.geometry.attributes.color.array[i * this.colorLength + 3] = 1
     }
 
-    this.timestamps[i] = Date.now()
+    // this.timestamps[i] = Date.now()
 
     this.currentIndex++
     this.geometry.attributes.position.needsUpdate = true
@@ -112,32 +113,43 @@ export default class Points {
     this.geometry.setDrawRange(0, drawCount)
   }
 
-  public updatePoint() {
-    const now = Date.now()
+  // public updatePoint() {
+  //   const now = Date.now()
 
-    const length = Math.min(this.currentIndex, this.maxPoints)
+  //   const length = Math.min(this.currentIndex, this.maxPoints)
 
-    const decayAlpha = (dt: number) => 1.0 - Math.min(dt / this.decayTime, 1.0)
+  //   const decayAlpha = (dt: number) => 1.0 - Math.min(dt / this.decayTime, 1.0)
 
-    for (let i = 0; i < length; i++) {
-      const age = now - this.timestamps[i]
+  //   for (let i = 0; i < length; i++) {
+  //     const age = now - this.timestamps[i]
 
-      if (this.alpha) {
-        this.geometry.attributes.color.array[i * this.colorLength + 3] = decayAlpha(age)
-      } else {
-        if (age > this.decayTime) {
-          this.geometry.attributes.color.array[i * 3] = 0
-          this.geometry.attributes.color.array[i * 3 + 1] = 0
-          this.geometry.attributes.color.array[i * 3 + 2] = 0
-        }
-      }
-    }
+  //     if (this.alpha) {
+  //       this.geometry.attributes.color.array[i * this.colorLength + 3] = decayAlpha(age)
+  //     } else {
+  //       if (age > this.decayTime) {
+  //         this.geometry.attributes.color.array[i * 3] = 0
+  //         this.geometry.attributes.color.array[i * 3 + 1] = 0
+  //         this.geometry.attributes.color.array[i * 3 + 2] = 0
+  //       }
+  //     }
+  //   }
 
-    this.geometry.attributes.color.needsUpdate = true
-  }
+  //   this.geometry.attributes.color.needsUpdate = true
+  // }
 
   public dispose() {
-    this.geometry.dispose()
-    this.material.dispose()
+    if (this.scene) {
+      this.scene.remove(this.points)
+    }
+
+    if (this.points.geometry) {
+      this.points.geometry.dispose()
+    }
+
+    if (Array.isArray(this.points.material)) {
+      this.points.material.forEach(m => m.dispose());
+    } else {
+      this.points.material.dispose();
+    }
   }
 }

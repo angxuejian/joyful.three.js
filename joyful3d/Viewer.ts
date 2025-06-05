@@ -23,8 +23,8 @@ export default class Viewer {
   private stats: Stats | null = null // 性能监控工具
 
   constructor(private options: ViewerOptionsType) {
-    this.width = options.el.clientWidth
-    this.height = options.el.clientHeight
+    this.width = this.options.el.clientWidth
+    this.height = this.options.el.clientHeight
 
     this.init()
   }
