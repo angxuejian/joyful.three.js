@@ -3,13 +3,28 @@ import * as THREE from 'three'
 export interface PointsOptionsType {
   scene?: THREE.Scene
   maxPoints?: number
-  // decayTime?: number
   alpha?: boolean
 }
 
+/**
+ * Points 点云渲染类
+ *
+ * 用于在 THREE.js 场景中高效批量渲染点云数据，支持颜色和透明度设置。
+ *
+ * 主要功能：
+ * - 支持最大点数限制，循环复用缓冲区，提升性能
+ * - 支持 RGB 或 RGBA 颜色（可选 alpha 通道）
+ * - 支持自定义点大小和透明度
+ * - 提供 addPoint 方法动态添加点
+ * - 提供 dispose 方法释放资源
+ *
+ * 构造参数 PointsOptionsType:
+ * @param scene      THREE.Scene 实例，点云会自动添加到该场景
+ * @param maxPoints  最大点数，超出后循环覆盖，默认 1000
+ * @param alpha      是否启用 alpha 通道，默认 false
+ */
 export default class Points {
   private maxPoints: number
-  // private decayTime: number
   private alpha: boolean
   private colorLength: number
   private currentIndex = 0
@@ -18,17 +33,14 @@ export default class Points {
   private points: THREE.Points
   private geometry: THREE.BufferGeometry
   private material: THREE.Material
-  // private timestamps: Float64Array
 
   constructor(private options: PointsOptionsType = {}) {
     this.maxPoints = this.options.maxPoints || 1000
-    // this.decayTime = this.options.decayTime || 1000
     this.alpha = this.options.alpha || false
     this.colorLength = this.alpha ? 4 : 3
     this.scene = this.options.scene
 
     this.geometry = new THREE.BufferGeometry()
-    // this.timestamps = new Float64Array(this.maxPoints)
 
     this.material = this.createMaterial()
     this.initGeometry()
@@ -103,8 +115,6 @@ export default class Points {
       this.geometry.attributes.color.array[i * this.colorLength + 3] = 1
     }
 
-    // this.timestamps[i] = Date.now()
-
     this.currentIndex++
     this.geometry.attributes.position.needsUpdate = true
     this.geometry.attributes.color.needsUpdate = true
@@ -112,30 +122,6 @@ export default class Points {
     const drawCount = Math.min(this.currentIndex, this.maxPoints)
     this.geometry.setDrawRange(0, drawCount)
   }
-
-  // public updatePoint() {
-  //   const now = Date.now()
-
-  //   const length = Math.min(this.currentIndex, this.maxPoints)
-
-  //   const decayAlpha = (dt: number) => 1.0 - Math.min(dt / this.decayTime, 1.0)
-
-  //   for (let i = 0; i < length; i++) {
-  //     const age = now - this.timestamps[i]
-
-  //     if (this.alpha) {
-  //       this.geometry.attributes.color.array[i * this.colorLength + 3] = decayAlpha(age)
-  //     } else {
-  //       if (age > this.decayTime) {
-  //         this.geometry.attributes.color.array[i * 3] = 0
-  //         this.geometry.attributes.color.array[i * 3 + 1] = 0
-  //         this.geometry.attributes.color.array[i * 3 + 2] = 0
-  //       }
-  //     }
-  //   }
-
-  //   this.geometry.attributes.color.needsUpdate = true
-  // }
 
   public dispose() {
     if (this.scene) {

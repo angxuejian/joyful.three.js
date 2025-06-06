@@ -3,12 +3,10 @@ import Points from "./Points";
 import type { ViewerOptionsType } from "./Viewer";
 import type { PointsOptionsType } from "./Points";
 
-const JOYFUL3D = {
+export {
   Viewer,
   Points
 }
-
-export default JOYFUL3D
 
 export type {
   ViewerOptionsType,

@@ -9,6 +9,23 @@ export interface ViewerOptionsType {
   grid?: boolean // 是否显示网格助手
 }
 
+/**
+ * Viewer 三维场景可视化类
+ *
+ * 用于快速初始化和管理 THREE.js 三维场景，支持坐标轴、网格、性能监视器等常用功能。
+ *
+ * 主要功能：
+ * - 自动创建并管理场景、相机、渲染器、控制器等核心对象
+ * - 支持窗口/容器自适应尺寸变化
+ * - 可选显示坐标轴、网格、性能监视器（帧率等）
+ * - 提供添加对象、设置相机位置、销毁资源等常用接口
+ *
+ * 构造参数 ViewerOptionsType:
+ * @param el    挂载的 DOM 元素（必填）
+ * @param axis  是否显示坐标系辅助线（可选，默认 false）
+ * @param stats 是否显示性能监视器（可选，默认 false）
+ * @param grid  是否显示网格辅助线（可选，默认 false）
+ */
 export default class Viewer {
   private width: number
   private height: number
@@ -16,7 +33,7 @@ export default class Viewer {
   private requestId: number | null = null
   private observer: ResizeObserver | null = null
 
-  private scene: THREE.Scene | null = null // 场景容器
+  private scene: THREE.Scene | undefined = undefined // 场景容器
   private camera: THREE.PerspectiveCamera | null = null // 透视相机
   private renderer: THREE.WebGLRenderer | null = null // 渲染器, 渲染到canvas上输出3D图像
   private controls: OrbitControls | null = null // 交互工具, 允许你用鼠标或触控操作相机, 环绕目标旋转、缩放、平移等交互, 还有其他交互工具FlyControls、PointerLockControls
@@ -70,7 +87,7 @@ export default class Viewer {
     })
     this.renderer.setSize(this.width, this.height)
     this.renderer.setPixelRatio(window.devicePixelRatio)
-
+    // console.log('111')
     this.options.el.appendChild(this.renderer.domElement)
   }
 
@@ -214,7 +231,7 @@ export default class Viewer {
     this.renderer?.dispose()
     this.controls?.dispose()
 
-    this.scene = null
+    this.scene = undefined
     this.camera = null
     this.controls = null
     this.renderer = null
