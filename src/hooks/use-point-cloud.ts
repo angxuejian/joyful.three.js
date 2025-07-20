@@ -35,6 +35,7 @@ export function usePointCloud2({
 }) {
   let index = 0
   let lastRenderTime = 0
+  let requestAnimationFrameId = 0
 
   const max = 20000
 
@@ -56,7 +57,6 @@ export function usePointCloud2({
 
   const subscribe = () => {
     processMessage()
-    processQueue()
   }
 
   const processMessage = () => {
@@ -77,20 +77,26 @@ export function usePointCloud2({
 
     index++
 
+    if (!requestAnimationFrameId) {
+      processQueue()
+    }
+
     setTimeout(() => {
       processMessage()
     }, 100)
   }
 
   const processQueue = () => {
-    const requestId = requestAnimationFrame(processQueue)
+    requestAnimationFrameId = requestAnimationFrame(processQueue)
 
     if (pointInstanceArray.length === 0 && pointCloudQueue.length === 0) {
-      cancelAnimationFrame(requestId)
+      cancelAnimationFrame(requestAnimationFrameId)
       return
     }
 
     const now = Date.now()
+    const MAX = 10
+    const MIN = -10
 
     if (pointInstanceArray.length) {
       if (now - pointInstanceArray[0].timestamps > decayTime) {
@@ -113,7 +119,11 @@ export function usePointCloud2({
       for (let i = 0; i < points.length; i++) {
         const { x, y, z } = points[i]
 
-        instance.addPoint(x, y, z, 0, 0, 0)
+        const t = (y - MIN) / (MAX - MIN)
+        const color = new THREE.Color()
+        color.setHSL((1 - t) * 0.7, 1.0, 0.5)
+
+        instance.addPoint(x, y, z, color.r, color.g, color.b)
       }
       lastRenderTime = now
     }
